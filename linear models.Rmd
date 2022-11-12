@@ -1,0 +1,90 @@
+---
+title: "linear models"
+output: github_document
+date: "2022-11-12"
+---
+
+```{r, include=FALSE}
+library(tidyverse)
+library(p8105.datasets)
+library(viridis)
+
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+Load NYC Airbnb dataset
+
+```{r}
+data("nyc_airbnb")
+
+nyc_airbnb = 
+  nyc_airbnb %>% 
+  mutate(stars = review_scores_location / 2) %>% 
+  rename(
+    borough = neighbourhood_group,
+    neighborhood = neighbourhood) %>% 
+  filter(borough != "Staten Island") %>% 
+  select(price, stars, borough, neighborhood, room_type)
+```
+
+## Fit the first model
+
+```{r}
+fit = lm(price~stars + borough, data = nyc_airbnb)
+
+fit
+
+summary(fit)
+
+fit %>%
+  broom::tidy()%>%
+  mutate(
+    term = str_replace(term, "borough", "Borough:")
+  ) %>%
+  select(term, estimate, p.value) %>%
+  knitr::kable(digits = 2)
+```
+
+Let's change reference category
+
+```{r}
+fit = 
+  nyc_airbnb %>%
+  mutate(
+    borough = fct_infreq(borough)
+  ) %>%
+  lm(price~stars + borough, data = . )
+
+
+fit %>%
+  broom::tidy()%>%
+  mutate(
+    term = str_replace(term, "borough", "Borough:")
+  ) %>%
+  select(term, estimate, p.value) %>%
+  knitr::kable(digits = 2) 
+
+fit %>%
+  broom::glance() %>%
+  select(AIC)
+
+```
+
+
+
