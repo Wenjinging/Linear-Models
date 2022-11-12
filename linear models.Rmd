@@ -86,5 +86,35 @@ fit %>%
 
 ```
 
+## Diagnositics
+
+```{r}
+modelr::add_residuals(nyc_airbnb,fit) %>%
+  ggplot(aes(x = stars, y = resid)) +
+  geom_point()
+
+nyc_airbnb %>%
+  modelr::add_residuals(fit) %>%
+  ggplot(aes(x = borough, y = resid)) +
+  geom_violin() +
+  ylim(-250,250)
+
+```
+
+## Hypothesis tests
+
+one coefficient (let's say `start`).
+
+```{r}
+fit %>% 
+  broom::tidy()
+
+fit_null = lm(price~stars, data = nyc_airbnb)
+fit_alt = lm(price~stars + borough, data = nyc_airbnb)
+
+anova(fit_null, fit_alt) %>% 
+  broom::tidy()
+```
+
 
 
